@@ -17,6 +17,8 @@ public class Main {
 
             graph.printList();
 
+            graph.dijkstra(0);
+
         } catch (FileNotFoundException e) {
             System.out.println("Unknown file");
         }
