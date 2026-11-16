@@ -15,9 +15,20 @@ public class Main {
 
             graph.readEdges(file,graph.getVertices(file));
 
-            graph.printList();
+            System.out.println();
+            graph.printNodes();
 
-            graph.dijkstra(0);
+            while (true){
+                System.out.println("\nWhat node would you like to start at? ('End' to quit): ");
+                String start = scanner.next();
+
+                if (start.equalsIgnoreCase( "End")){
+                    break;
+                }
+
+                graph.dijkstra(start.toUpperCase());
+            }
+
 
         } catch (FileNotFoundException e) {
             System.out.println("Unknown file");

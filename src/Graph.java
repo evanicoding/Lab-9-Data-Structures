@@ -1,21 +1,17 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
 public class Graph {
     private ArrayList<ArrayList<Edge>> list;
+    private ArrayList<String> names;
 
     public Graph(){
         list = new ArrayList<>();
-    }
-
-    public Graph(int vertices){
-        list = new ArrayList<>();
-        for (int i = 0; i<vertices;i++){
-            list.add(new ArrayList<>());
-        }
+        names = new ArrayList<>();
     }
 
     public ArrayList<String> getVertices(String filename) throws FileNotFoundException {
@@ -33,6 +29,7 @@ public class Graph {
                 if (!vertices.contains(parts[1])) vertices.add(parts[1]);
             }
         }
+        names = vertices;
         return vertices;
     }
 
@@ -71,29 +68,68 @@ public class Graph {
         }
     }
 
-    public void dijkstra(int src){
-        PriorityQueue<Integer> priority = new PriorityQueue<>();
+    public void printNodes(){
+        System.out.println("List of Nodes: ");
+        for (String node:names){
+            System.out.println(node);
+        }
+    }
+
+    public void dijkstra(String start){
+        int src = names.indexOf(String.valueOf(start));
+        if (src == -1) {
+            System.out.println("Unknown node: " + start);
+            return;
+        }
+
+        PriorityQueue<double[]> priority = new PriorityQueue<>((a, b) -> Double.compare(a[0], b[0]));
+
         ArrayList<Double> distance = new ArrayList<>();
         ArrayList<Integer> prev = new ArrayList<>();
 
         for (ArrayList<Edge> v : list){
-            distance.add(Double.MAX_VALUE);
+            distance.add(Double.POSITIVE_INFINITY);
             prev.add(null);
         }
 
         distance.set(src,0.0);
-        priority.offer(src);
+        priority.offer(new double[]{0,src});
 
         while(!priority.isEmpty()){
-            int u = priority.poll();
+            double[] curr = priority.poll();
+            int u = (int) curr[1];
+            if (curr[0] > distance.get(u)) continue;
+
             for (Edge e: list.get(u)){
                 double alt = distance.get(u) + e.weight;
                 if (alt < distance.get(e.dst)){
                     distance.set(e.dst,alt);
                     prev.set(e.dst,u);
-
+                    priority.offer(new double[]{alt,e.dst});
                 }
             }
+        }
+
+        System.out.println("Node to start at: " + names.get(src));
+        System.out.println();
+
+        for (int v = 0; v < list.size(); v++) {
+            if (distance.get(v) == Double.POSITIVE_INFINITY) {
+                System.out.println(names.get(v) + "  unreachable");
+                continue;
+            }
+
+            // walk prev backward from v to src, then reverse
+            ArrayList<Integer> path = new ArrayList<>();
+            for (Integer at = v; at != null; at = prev.get(at)) path.add(at);
+            Collections.reverse(path);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < path.size(); i++) {
+                if (i > 0) sb.append(" -> ");
+                sb.append(names.get(path.get(i)));
+            }
+            System.out.println(sb + "  dist: " + (distance.get(v)));
         }
 
     }
